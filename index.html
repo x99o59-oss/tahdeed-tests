@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تحديد للاختبارات</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,Arial;background:#f4f6fa;color:#17233b}
+header{background:#101c35;color:white;padding:20px 6%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.logo{font-size:25px;font-weight:bold;color:#d5ae62}
+button{border:0;padding:12px 18px;border-radius:9px;background:#d5ae62;color:#101c35;font-weight:bold;cursor:pointer}
+.secondary{background:#263957;color:white}
+main{max-width:1100px;margin:35px auto;padding:15px}
+.hero{background:linear-gradient(120deg,#101c35,#30496d);color:white;padding:45px;border-radius:22px}
+.hero h1{font-size:38px;line-height:1.5}
+.hero p{line-height:2;color:#ddd}
+h2{margin-top:35px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.card,.panel{background:white;padding:22px;border-radius:15px;border:1px solid #e4e8ef}
+.card h3{color:#17233b}
+.card p{line-height:2;color:#65718a}
+.tag{color:#99752e;font-size:13px}
+.date{color:#999;font-size:12px}
+.hidden{display:none!important}
+input,textarea,select{width:100%;padding:13px;margin:8px 0 15px;border:1px solid #ddd;border-radius:8px;font:inherit}
+textarea{height:110px}
+.admin{max-width:1000px;margin:30px auto;padding:15px}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.post{padding:15px;border-bottom:1px solid #ddd}
+footer{text-align:center;padding:30px;color:#777}
+@media(max-width:700px){.grid,.admin-grid{grid-template-columns:1fr}.hero h1{font-size:27px}header{align-items:center}}
+</style>
+</head>
+<body>
+
+<header>
+<div class="logo">تحديد للاختبارات</div>
+<div>
+<button class="secondary" onclick="home()">الرئيسية</button>
+<button onclick="loginPage()">دخول المشرفين</button>
+</div>
+</header>
+
+<main id="homePage">
+<section class="hero">
+<h1>كل جديد في عالم الاختبارات بمكان واحد</h1>
+<p>منصة تحديد للاختبارات لمتابعة الإعلانات والمواعيد والتحديثات التعليمية.</p>
+<button onclick="document.getElementById('updates').scrollIntoView({behavior:'smooth'})">اكتشف التحديثات</button>
+</section>
+
+<h2>أحدث التحديثات</h2>
+<div id="updates" class="grid"></div>
+</main>
+
+<main id="loginPage" class="hidden">
+<div class="panel" style="max-width:420px;margin:auto">
+<h2>دخول المشرفين</h2>
+<p>دخول تجريبي للعرض فقط</p>
+<input id="username" placeholder="اسم المشرف">
+<input id="password" type="password" placeholder="رمز العرض">
+<button onclick="login()">دخول</button>
+</div>
+</main>
+
+<section id="adminPage" class="admin hidden">
+<h2>لوحة التحكم</h2>
+<button class="secondary" onclick="home()">تسجيل الخروج</button>
+<div class="admin-grid" style="margin-top:20px">
+<div class="panel">
+<h3>إضافة تحديث</h3>
+<input id="title" placeholder="عنوان التحديث">
+<select id="category">
+<option>الاختبارات</option>
+<option>المواعيد</option>
+<option>المناهج</option>
+<option>منصة مدرستي</option>
+</select>
+<textarea id="details" placeholder="تفاصيل التحديث"></textarea>
+<button onclick="addPost()">نشر التحديث</button>
+</div>
+<div class="panel">
+<h3>إدارة المنشورات</h3>
+<div id="manage"></div>
+</div>
+</div>
+</section>
+
+<footer>تحديد للاختبارات © 2026</footer>
+
+<script>
+let posts=JSON.parse(localStorage.getItem('posts')||'[]');
+
+function home(){
+homePage.classList.remove('hidden');
+loginPage.classList.add('hidden');
+adminPage.classList.add('hidden');
+render();
+}
+
+function loginPage(){
+homePage.classList.add('hidden');
+adminPage.classList.add('hidden');
+loginPage.classList.remove('hidden');
+}
+
+function login(){
+if(password.value==='DEMO'){
+loginPage.classList.add('hidden');
+adminPage.classList.remove('hidden');
+render();
+}else alert('رمز العرض غير صحيح');
+}
+
+function addPost(){
+if(!title.value.trim()||!details.value.trim())return alert('أكمل البيانات');
+posts.unshift({
+id:Date.now(),
+title:title.value,
+category:category.value,
+details:details.value,
+date:new Date().toLocaleDateString('ar-SA')
+});
+save();
+title.value='';
+details.value='';
+render();
+alert('تمت إضافة التحديث');
+}
+
+function removePost(id){
+posts=posts.filter(p=>p.id!==id);
+save();
+render();
+}
+
+function save(){
+localStorage.setItem('posts',JSON.stringify(posts));
+}
+
+function render(){
+updates.innerHTML=posts.map(p=>`
+<div class="card">
+<span class="tag">${escapeText(p.category)}</span>
+<h3>${escapeText(p.title)}</h3>
+<p>${escapeText(p.details)}</p>
+<div class="date">${p.date}</div>
+</div>`).join('')||'<p>لا توجد تحديثات حالياً</p>';
+
+manage.innerHTML=posts.map(p=>`
+<div class="post">
+<b>${escapeText(p.title)}</b>
+<button onclick="removePost(${p.id})">حذف</button>
+</div>`).join('')||'لا توجد منشورات';
+}
+
+function escapeText(s){
+return String(s).replace(/[&<>"']/g,c=>({
+'&':'&amp;','<':'&lt;','>':'&gt;',
+'"':'&quot;',"'":'&#39;'
+}[c]));
+}
+
+render();
+</script>
+</body>
+</html>
