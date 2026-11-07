@@ -54,7 +54,7 @@ footer{text-align:center;padding:30px;color:#777}
 </main>
 
 <main id="loginPage" class="hidden">
-<div id="loginPage" class="panel hidden" style="max-width:420px;margin:auto">
+<div class="panel" style="max-width:420px;margin:auto">
 <h2>دخول المشرفين</h2>
 <p>دخول المشرف باستخدام البريد الإلكتروني وكلمة المرور</p>
 <input id="email" type="email" placeholder="البريد الإلكتروني للمشرف">
@@ -99,8 +99,8 @@ render();
 }
 
 function showLogin(){
-  homePage.classList.add('hidden');
-  adminPage.classList.add('hidden');
+  document.getElementById('homePage').classList.add('hidden');
+  document.getElementById('adminPage').classList.add('hidden');
   document.getElementById('loginPage').classList.remove('hidden');
 }
 
