@@ -120,46 +120,79 @@ async function login(){
   render();
 }
 
-function addPost(){
-if(!title.value.trim()||!details.value.trim())return alert('أكمل البيانات');
-posts.unshift({
-id:Date.now(),
-title:title.value,
-category:category.value,
-details:details.value,
-date:new Date().toLocaleDateString('ar-SA')
-});
-save();
-title.value='';
-details.value='';
-render();
-alert('تمت إضافة التحديث');
+async function addPost(){
+  if(!title.value.trim() || !details.value.trim()){
+    return alert('أكمل البيانات');
+  }
+
+  const { error } = await supabaseClient
+    .from('updates')
+    .insert({
+      title: title.value.trim(),
+      content: details.value.trim(),
+      category: category.value,
+      published: true
+    });
+
+  if(error){
+    alert('تعذرت إضافة التحديث: ' + error.message);
+    return;
+  }
+
+  title.value = '';
+  details.value = '';
+
+  await render();
+  alert('تمت إضافة التحديث بنجاح');
 }
 
-function removePost(id){
-posts=posts.filter(p=>p.id!==id);
-save();
-render();
-}
+async function removePost(id){
+  const { error } = await supabaseClient
+    .from('updates')
+    .delete()
+    .eq('id', id);
 
+  if(error){
+    alert('تعذر حذف التحديث: ' + error.message);
+    return;
+  }
+
+  await render();
+  alert('تم حذف التحديث');
+}
 function save(){
 localStorage.setItem('posts',JSON.stringify(posts));
 }
 
-function render(){
-updates.innerHTML=posts.map(p=>`
-<div class="card">
-<span class="tag">${escapeText(p.category)}</span>
-<h3>${escapeText(p.title)}</h3>
-<p>${escapeText(p.details)}</p>
-<div class="date">${p.date}</div>
-</div>`).join('')||'<p>لا توجد تحديثات حالياً</p>';
+async function render(){
+  const { data, error } = await supabaseClient
+    .from('updates')
+    .select('*')
+    .eq('published', true)
+    .order('created_at', { ascending: false });
 
-manage.innerHTML=posts.map(p=>`
-<div class="post">
-<b>${escapeText(p.title)}</b>
-<button onclick="removePost(${p.id})">حذف</button>
-</div>`).join('')||'لا توجد منشورات';
+  if(error){
+    updates.innerHTML = '<p>تعذر تحميل التحديثات</p>';
+    console.error(error);
+    return;
+  }
+
+  posts = data.map(p => ({
+    id: p.id,
+    title: p.title,
+    category: p.category,
+    details: p.content,
+    date: new Date(p.created_at).toLocaleDateString('ar-SA')
+  }));
+
+  updates.innerHTML = posts.map(p => `
+    <div class="card">
+      <span class="tag">${escapeText(p.category)}</span>
+      <h3>${escapeText(p.title)}</h3>
+      <p>${escapeText(p.details)}</p>
+      <div class="date">${p.date}</div>
+    </div>
+  `).join('') || '<p>لا توجد تحديثات حالياً</p>';
 }
 
 function escapeText(s){
