@@ -104,12 +104,20 @@ adminPage.classList.add('hidden');
 loginPage.classList.remove('hidden');
 }
 
-function login(){
-if(password.value==='DEMO'){
-loginPage.classList.add('hidden');
-adminPage.classList.remove('hidden');
-render();
-}else alert('رمز العرض غير صحيح');
+async function login(){
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: document.getElementById('email').value,
+    password: document.getElementById('password').value
+  });
+
+  if(error){
+    alert('بيانات الدخول غير صحيحة');
+    return;
+  }
+
+  loginPage.classList.add('hidden');
+  adminPage.classList.remove('hidden');
+  render();
 }
 
 function addPost(){
