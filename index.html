@@ -105,22 +105,24 @@ function showLogin(){
 }
 
 async function login(){
-  alert('تم تشغيل زر الدخول');
+  const emailValue = document.getElementById('email').value.trim();
+  const passwordValue = document.getElementById('password').value;
+
   const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: document.getElementById('email').value,
-    password: document.getElementById('password').value
+    email: emailValue,
+    password: passwordValue
   });
 
   if(error){
-    alert('بيانات الدخول غير صحيحة');
+    alert('خطأ في تسجيل الدخول: ' + error.message);
     return;
   }
 
-  loginPage.classList.add('hidden');
-  adminPage.classList.remove('hidden');
-  render();
-}
+  document.getElementById('loginPage').classList.add('hidden');
+  document.getElementById('adminPage').classList.remove('hidden');
 
+  await render();
+}
 async function addPost(){
   if(!title.value.trim() || !details.value.trim()){
     return alert('أكمل البيانات');
