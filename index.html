@@ -105,6 +105,7 @@ function showLogin(){
 }
 
 async function login(){
+  alert('تم تشغيل زر الدخول');
   const { data, error } = await supabaseClient.auth.signInWithPassword({
     email: document.getElementById('email').value,
     password: document.getElementById('password').value
